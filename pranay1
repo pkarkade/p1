@@ -1,0 +1,53 @@
+#include <DHT.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+
+
+
+#define DHTPIN D2		// DHT11 sensor pin #define PIR_PIN D5	// PIR motion sensor pin #define RELAY_PIN D6			// Relay module pin #define DHTTYPE DHT11				// DHT 11
+#define LCD_ADDR 0x27	// I2C address for 16x2 LCD
+
+
+DHT dht(DHTPIN, DHTTYPE);
+LiquidCrystal_I2C lcd(LCD_ADDR, 16, 2);
+
+
+void loop() {
+// Read DHT11 values
+float humidity = dht.readHumidity();
+float temperature = dht.readTemperature();
+
+// Check if readings are valid
+if (isnan(humidity) || isnan(temperature)) { Serial.println("Failed to read from DHT sensor!"); return;
+}
+
+// Read air quality sensor value (from A0 pin) int airQuality = analogRead(A0);
+
+// Read PIR sensor status
+int motionDetected = digitalRead(PIR_PIN);
+
+
+
+
+// Display readings on LCD lcd.clear();
+lcd.setCursor(0, 0); lcd.print("Temp: "); lcd.print(temperature); lcd.print("C");
+
+lcd.setCursor(0, 1); lcd.print("Hum: "); lcd.print(humidity); lcd.print("%");
+
+lay(2000);
+
+lcd.clear(); lcd.setCursor(0, 0); lcd.print("Air: "); lcd.print(airQuality);
+
+lcd.setCursor(0, 1); lcd.print("Motion: ");
+lcd.print(motionDetected ? "Yes" : "No");
+
+// Check air quality and motion to activate relay
+if (airQuality > 300 || motionDetected == HIGH) { digitalWrite(RELAY_PIN, HIGH); // Turn on relay
+} else {
+digitalWrite(RELAY_PIN, LOW);	// Turn off relay
+}
+
+
+delay(2000); // Delay between readings
+}
